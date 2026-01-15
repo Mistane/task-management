@@ -3,7 +3,13 @@ const paginationHelper = require("../../.././helpers/paginationHelper");
 class Controller {
   //[GET] /tasks
   async index(req, res) {
-    const find = { deleted: false };
+    const find = {
+      deleted: false,
+      $or: [
+        { createdBy: req.user.userId },
+        { membersList: { $in: [req.user.userId] } },
+      ],
+    };
     const sort = {};
 
     //Phan trang
@@ -52,6 +58,7 @@ class Controller {
 
   //[POST] /tasks/create
   async create(req, res) {
+    req.body.createdBy = req.user.userId;
     const newTask = new Task(req.body);
     await newTask.save();
     res.status(200).json({
